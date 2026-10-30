@@ -130,7 +130,18 @@
       "memberId": "shared",
       "size": 324200,
       "createdAt": "2019-12-10T17:10:06+08:00"
+    },
+    {
+      "id": "a12fb395-103a-4c36-a85c-7dfc4f8616d8",
+      "file": "m_a12fb395-103a-4c36-a85c-7dfc4f8616d8.jpg",
+      "originalName": "2019_11_23_21_46_55.jpg",
+      "caption": "上传验证",
+      "type": "photo",
+      "date": "2026-10-30",
+      "memberId": "0fcc71d9-ff5c-419d-8a6e-96569d987e91",
+      "size": 286961,
+      "createdAt": "2026-10-30T12:09:58.237Z"
     }
   ],
-  "updatedAt": "2026-10-30T12:06:12.976Z"
+  "updatedAt": "2026-10-30T12:09:58.790Z"
 }
