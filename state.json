@@ -126,7 +126,18 @@
       "memberId": "shared",
       "size": 324200,
       "createdAt": "2019-12-10T17:10:06+08:00"
+    },
+    {
+      "id": "f87e3f8d-e004-4a6e-ae44-d0399980b1c0",
+      "file": "m_f87e3f8d-e004-4a6e-ae44-d0399980b1c0.jpg",
+      "originalName": "661.jpg",
+      "caption": "661",
+      "type": "photo",
+      "date": "2026-10-30",
+      "memberId": "shared",
+      "size": 3929205,
+      "createdAt": "2026-10-30T12:28:51.542Z"
     }
   ],
-  "updatedAt": "2026-10-30T12:15:25.723Z"
+  "updatedAt": "2026-10-30T12:28:52.063Z"
 }
