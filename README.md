@@ -36,6 +36,8 @@
 
 ## 背景音乐
 
+本次选片导入：新增 214 张照片、40 段 MP4；5 张完全相同的照片已在相册中，按文件内容跳过。相册共 225 张照片、41 段视频。原文件内容未改动，每条新回忆附有最长边 720 像素的预览图，视频也有静态封面。成批保存支持断点继续与重复请求，不覆盖已有回忆。
+
 以下曲目均由 Kevin MacLeod (https://incompetech.com/) 创作，使用 Creative Commons Attribution 4.0 授权：https://creativecommons.org/licenses/by/4.0/ 。音乐控件保留曲名、作者、原曲来源、授权及改动说明。
 
 - Carefree — https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1400037

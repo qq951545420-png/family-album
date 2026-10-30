@@ -25,6 +25,7 @@
  async function play(){
   if(!wanted||document.hidden||videoPlaying()){paint();return;}
   if(current<0)selectNext();
+  if(audio.error)audio.load();
   const ticket=++sequence;status.textContent='正在打开音乐…';paint();
   try{await audio.play();if(ticket!==sequence||!wanted||document.hidden||videoPlaying()){if(ticket===sequence)audio.pause();return;}status.textContent='随机播放 · '+tracks[current].title;paint();}
   catch(error){if(ticket!==sequence)return;if(error.name==='AbortError'){paint();return;}stopForError();}
