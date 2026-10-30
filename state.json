@@ -801,7 +801,20 @@
       "memberId": "shared",
       "size": 5531301,
       "createdAt": "2026-10-30T16:02:04.228Z"
+    },
+    {
+      "id": "a8100d48-e7b3-5044-9c98-c82b70d83030",
+      "file": "m_a8100d48-e7b3-5044-9c98-c82b70d83030.jpg",
+      "blobSha": "628a61724f8dfa694ca682fd4a17a6a214fddf91",
+      "thumbnail": "t_a8100d48-e7b3-5044-9c98-c82b70d83030.jpg",
+      "originalName": "2020_04_07_16_59_13.jpg",
+      "caption": "2020.04.07 · 珍藏的小日常",
+      "type": "photo",
+      "date": "2020-04-07",
+      "memberId": "shared",
+      "size": 3195495,
+      "createdAt": "2026-10-30T16:02:12.249Z"
     }
   ],
-  "updatedAt": "2026-10-30T16:02:04.817Z"
+  "updatedAt": "2026-10-30T16:02:12.861Z"
 }
