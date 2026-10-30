@@ -3349,7 +3349,98 @@
       "memberId": "shared",
       "size": 3687302,
       "createdAt": "2026-10-30T16:18:19.714Z"
+    },
+    {
+      "id": "ddb0adba-02ea-5a90-9b85-c6f9333aa8d6",
+      "file": "m_ddb0adba-02ea-5a90-9b85-c6f9333aa8d6.mp4",
+      "blobSha": "50757bac111d2992f6ce041199d51641fef5eedd",
+      "thumbnail": "t_ddb0adba-02ea-5a90-9b85-c6f9333aa8d6.jpg",
+      "originalName": "VUE_20171102130606.mp4",
+      "caption": "2017.11.02 · 一段小日常",
+      "type": "video",
+      "date": "2017-11-02",
+      "memberId": "shared",
+      "size": 5875582,
+      "createdAt": "2026-10-30T16:21:32.355Z"
+    },
+    {
+      "id": "1c8c4af5-963a-5b43-9645-9f488986a547",
+      "file": "m_1c8c4af5-963a-5b43-9645-9f488986a547.mp4",
+      "blobSha": "6d31ec46becf67bbd5de6c2284fefa4c519e9696",
+      "thumbnail": "t_1c8c4af5-963a-5b43-9645-9f488986a547.jpg",
+      "originalName": "VUE_20180529135048.mp4",
+      "caption": "2018.05.29 · 一段小日常",
+      "type": "video",
+      "date": "2018-05-29",
+      "memberId": "shared",
+      "size": 3404406,
+      "createdAt": "2026-10-30T16:21:32.355Z"
+    },
+    {
+      "id": "4e2e9b9a-b8dd-5e79-af1b-9589bfa044f6",
+      "file": "m_4e2e9b9a-b8dd-5e79-af1b-9589bfa044f6.jpg",
+      "blobSha": "6d2e2b30460e99b3946fd650f408361154b63777",
+      "thumbnail": "t_4e2e9b9a-b8dd-5e79-af1b-9589bfa044f6.jpg",
+      "originalName": "wx_camera_1584498751186.jpg",
+      "caption": "2020.03.18 · 珍藏的小日常",
+      "type": "photo",
+      "date": "2020-03-18",
+      "memberId": "shared",
+      "size": 987923,
+      "createdAt": "2026-10-30T16:21:32.355Z"
+    },
+    {
+      "id": "b235cf09-f15e-551f-9e85-cd756f4faf17",
+      "file": "m_b235cf09-f15e-551f-9e85-cd756f4faf17.jpg",
+      "blobSha": "1cc97eaacc042ea3c6c550507a66c234e08ce66b",
+      "thumbnail": "t_b235cf09-f15e-551f-9e85-cd756f4faf17.jpg",
+      "originalName": "wx_camera_1584498932185.jpg",
+      "caption": "2020.03.18 · 珍藏的小日常",
+      "type": "photo",
+      "date": "2020-03-18",
+      "memberId": "shared",
+      "size": 954369,
+      "createdAt": "2026-10-30T16:21:32.355Z"
+    },
+    {
+      "id": "fbfa50d2-ee18-5121-b417-8a80d624de47",
+      "file": "m_fbfa50d2-ee18-5121-b417-8a80d624de47.mp4",
+      "blobSha": "13c1f12d3eee0b6071254876730c4762bd6d213f",
+      "thumbnail": "t_fbfa50d2-ee18-5121-b417-8a80d624de47.jpg",
+      "originalName": "wx_camera_1584539123929.mp4",
+      "caption": "2020.03.18 · 一段小日常",
+      "type": "video",
+      "date": "2020-03-18",
+      "memberId": "shared",
+      "size": 1730047,
+      "createdAt": "2026-10-30T16:21:32.355Z"
+    },
+    {
+      "id": "bcb96948-0dbe-524f-aa23-96da2dc10aa4",
+      "file": "m_bcb96948-0dbe-524f-aa23-96da2dc10aa4.mp4",
+      "blobSha": "59329d58290e5c48a16ff9bafc7e291a1641b0ae",
+      "thumbnail": "t_bcb96948-0dbe-524f-aa23-96da2dc10aa4.jpg",
+      "originalName": "wx_camera_1585186420765.mp4",
+      "caption": "2020.03.26 · 一段小日常",
+      "type": "video",
+      "date": "2020-03-26",
+      "memberId": "shared",
+      "size": 2374145,
+      "createdAt": "2026-10-30T16:21:32.355Z"
+    },
+    {
+      "id": "1e358f5f-5195-5357-b405-b4d7c0c7036b",
+      "file": "m_1e358f5f-5195-5357-b405-b4d7c0c7036b.jpg",
+      "blobSha": "d4c6f2f19dc2b35ffb66a409bb966df4a3c4a027",
+      "thumbnail": "t_1e358f5f-5195-5357-b405-b4d7c0c7036b.jpg",
+      "originalName": "wx_camera_1585205466817.jpg",
+      "caption": "2020.03.26 · 珍藏的小日常",
+      "type": "photo",
+      "date": "2020-03-26",
+      "memberId": "shared",
+      "size": 727944,
+      "createdAt": "2026-10-30T16:21:32.355Z"
     }
   ],
-  "updatedAt": "2026-10-30T16:18:20.339Z"
+  "updatedAt": "2026-10-30T16:21:33.102Z"
 }
