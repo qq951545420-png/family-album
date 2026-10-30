@@ -1087,7 +1087,20 @@
       "memberId": "shared",
       "size": 395561,
       "createdAt": "2026-10-30T16:04:45.624Z"
+    },
+    {
+      "id": "9d4179d6-3fec-5a7b-8cd8-f1a81dbb7a88",
+      "file": "m_9d4179d6-3fec-5a7b-8cd8-f1a81dbb7a88.jpg",
+      "blobSha": "e6544d7008e278b7e06bd41daaf28b49078acfd2",
+      "thumbnail": "t_9d4179d6-3fec-5a7b-8cd8-f1a81dbb7a88.jpg",
+      "originalName": "IMG_20191021_154006.jpg",
+      "caption": "2019.10.21 · 珍藏的小日常",
+      "type": "photo",
+      "date": "2019-10-21",
+      "memberId": "shared",
+      "size": 360318,
+      "createdAt": "2026-10-30T16:04:52.448Z"
     }
   ],
-  "updatedAt": "2026-10-30T16:04:46.199Z"
+  "updatedAt": "2026-10-30T16:04:53.010Z"
 }
