@@ -141,18 +141,7 @@
       "memberId": "0fcc71d9-ff5c-419d-8a6e-96569d987e91",
       "size": 286961,
       "createdAt": "2026-10-30T12:09:58.237Z"
-    },
-    {
-      "id": "463e3608-c496-4f2c-9886-bc33c46ce89e",
-      "file": "m_463e3608-c496-4f2c-9886-bc33c46ce89e.mp4",
-      "originalName": "2019_11_18_06_36_11.mp4",
-      "caption": "上传验证",
-      "type": "video",
-      "date": "2026-10-30",
-      "memberId": "0fcc71d9-ff5c-419d-8a6e-96569d987e91",
-      "size": 9671913,
-      "createdAt": "2026-10-30T12:10:08.789Z"
     }
   ],
-  "updatedAt": "2026-10-30T12:10:09.417Z"
+  "updatedAt": "2026-10-30T12:12:32.485Z"
 }
