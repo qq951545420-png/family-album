@@ -2,6 +2,7 @@
 const OWNER='qq951545420-png', REPO='family-album', BRANCH='main', MAX_FILE=20*1024*1024;
 const json=(value,status=200)=>new Response(JSON.stringify(value),{status,headers:{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
 const fail=(message,status=400)=>Object.assign(new Error(message),{status});
+function background(ctx,promise){const safe=promise.catch(()=>{});if(ctx?.waitUntil)ctx.waitUntil(safe);}
 function config(env){return {owner:env.GITHUB_OWNER||OWNER,repo:env.GITHUB_REPO||REPO,branch:env.GITHUB_BRANCH||BRANCH,token:env.GITHUB_TOKEN};}
 async function gh(c,path,options={}){
   const response=await fetch(`https://api.github.com/repos/${encodeURIComponent(c.owner)}/${encodeURIComponent(c.repo)}${path}`,{...options,headers:{'Accept':'application/vnd.github+json','Authorization':`Bearer ${c.token}`,'User-Agent':'Family-Album','X-GitHub-Api-Version':'2022-11-28','Content-Type':'application/json',...(options.headers||{})}});
@@ -15,6 +16,7 @@ async function mutate(c,message,change,extraEntries=[]){
     const commit=await gh(c,`/git/commits/${head.object.sha}`);
     const state=await readAt(c,head.object.sha);
     const result=change(state);
+    if(result.alreadySaved)return {state,...result};
     state.updatedAt=new Date().toISOString();
     const entries=typeof extraEntries==='function'?extraEntries(state,result):extraEntries;
     const tree=await gh(c,'/git/trees',{method:'POST',body:JSON.stringify({base_tree:commit.tree.sha,tree:[{path:'state.json',mode:'100644',type:'blob',content:JSON.stringify(state,null,2)},...entries]})});
@@ -26,7 +28,7 @@ function requireWrite(request,c){if(!c.token)throw fail('上传与修改功能�
 async function payload(request){const length=Number(request.headers.get('Content-Length')||0);if(length>8192)throw fail('提交的文字过长。',413);const text=await request.text();if(text.length>8192)throw fail('提交的文字过长。',413);try{return JSON.parse(text);}catch{throw fail('提交的内容格式有误。');}}
 function validDate(s){if(typeof s!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(s))return false;const d=new Date(s+'T00:00:00Z');return !isNaN(d)&&d.toISOString().slice(0,10)===s;}
 function extension(name){const ext=String(name).split('.').pop().toLowerCase();if(!['jpg','jpeg','png','webp','gif','mp4'].includes(ext))throw fail('仅支持 JPG、PNG、WebP、GIF 和 MP4。');return ext;}
-async function api(request,env){
+async function api(request,env,ctx){
   const c=config(env),path=new URL(request.url).pathname.replace(/^\/api\//,''),method=request.method;
   if(path==='state'&&method==='GET'){
     if(c.token){try{return json({state:await readAt(c,c.branch),writable:true});}catch{/* Public browsing still works when write authorization expires. */}}
@@ -62,24 +64,42 @@ async function api(request,env){
     if(!/^[0-9a-f]{40}$/.test(data.blobSha||''))throw fail('文件上传没有完成，请重试。');
     if(!Number.isInteger(data.size)||data.size<=0||data.size>MAX_FILE)throw fail('每个文件最大 20 MB。',413);
     if(!validDate(data.date))throw fail('请选择有效的拍摄日期。');
-    const id=crypto.randomUUID(),file=`m_${id}.${ext}`;
-    const entry={id,file,originalName:name,caption:String(data.caption||name).trim().slice(0,120)||name,type:ext==='mp4'?'video':'photo',date:data.date,memberId:data.memberId,size:data.size,createdAt:new Date().toISOString()};
-    return json(await mutate(c,'收藏新的家庭回忆',state=>{if(!state.members.some(m=>m.id===data.memberId))throw fail('这位成员已被移除，请重新选择。',409);if(state.memories.length>=5000)throw fail('相册已达到 5000 个文件，请先整理。');state.memories.push(entry);return {};},[{path:file,mode:'100644',type:'blob',sha:data.blobSha}]));
+    if(data.uploadId&&!/^[0-9a-f-]{36}$/i.test(data.uploadId))throw fail('上传标识有误，请重新选择文件。');
+    if(data.thumbnailSha&&!/^[0-9a-f]{40}$/.test(data.thumbnailSha))throw fail('预览图上传没有完成，请重试。');
+    const id=data.uploadId||crypto.randomUUID(),file=`m_${id}.${ext}`,thumbnail=data.thumbnailSha?`t_${id}.jpg`:null;
+    const entry={id,file,blobSha:data.blobSha,...(thumbnail?{thumbnail}:{}),originalName:name,caption:String(data.caption||name).trim().slice(0,120)||name,type:ext==='mp4'?'video':'photo',date:data.date,memberId:data.memberId,size:data.size,createdAt:new Date().toISOString()};
+    const entries=[{path:file,mode:'100644',type:'blob',sha:data.blobSha},...(thumbnail?[{path:thumbnail,mode:'100644',type:'blob',sha:data.thumbnailSha}]:[])];
+    return json(await mutate(c,'收藏新的家庭回忆',state=>{const existing=state.memories.find(m=>m.id===id);if(existing){if(existing.blobSha===data.blobSha)return {alreadySaved:true};throw fail('这个上传标识已被使用，请重新选择文件。',409);}if(!state.members.some(m=>m.id===data.memberId))throw fail('这位成员已被移除，请重新选择。',409);if(state.memories.length>=5000)throw fail('相册已达到 5000 个文件，请先整理。');state.memories.push(entry);return {};},entries));
   }
   if(/^memories\/[a-zA-Z0-9-]+$/.test(path)&&method==='DELETE'){
-    const id=path.split('/')[1];return json(await mutate(c,'移除一条家庭回忆',state=>{const entry=state.memories.find(m=>m.id===id);if(!entry)throw fail('这条回忆已被移除。',404);state.memories=state.memories.filter(m=>m.id!==id);return {removed:entry.file};},(_,result)=>[{path:result.removed,mode:'100644',type:'blob',sha:null}]));
+    const id=path.split('/')[1];const result=await mutate(c,'移除一条家庭回忆',state=>{const entry=state.memories.find(m=>m.id===id);if(!entry)throw fail('这条回忆已被移除。',404);state.memories=state.memories.filter(m=>m.id!==id);return {removed:entry.file,...(entry.thumbnail?{removedThumbnail:entry.thumbnail}:{})};},(_,result)=>[result.removed,result.removedThumbnail].filter(Boolean).map(path=>({path,mode:'100644',type:'blob',sha:null})));
+    const cache=globalThis.caches?.default;if(cache)background(ctx,Promise.all([result.removed,result.removedThumbnail].filter(Boolean).map(file=>cache.delete(new Request(new URL('/media/'+file,request.url))))));
+    return json(result);
   }
   throw fail('没有找到这个操作。',404);
 }
-async function media(request,env){
+async function media(request,env,ctx){
   const url=new URL(request.url),file=decodeURIComponent(url.pathname.slice('/media/'.length));
   if(!/^[a-zA-Z0-9_-]+\.(jpe?g|png|webp|gif|mp4)$/.test(file))return new Response('Not found',{status:404});
-  const c=config(env);let response;
-  if(c.token){const headers={};const range=request.headers.get('Range');if(range)headers.Range=range;response=await fetch(`https://raw.githubusercontent.com/${encodeURIComponent(c.owner)}/${encodeURIComponent(c.repo)}/${encodeURIComponent(c.branch)}/${encodeURIComponent(file)}`,{method:request.method,headers});}
-  else{const target=new URL('/'+file,request.url);response=await env.ASSETS.fetch(new Request(target,{method:request.method,headers:request.headers}));}
+  const c=config(env),cache=globalThis.caches?.default,cacheKey=new Request(new URL('/media/'+file,request.url)),headersIn=new Headers();
+  for(const key of ['Range','If-None-Match','If-Modified-Since']){const value=request.headers.get(key);if(value)headersIn.set(key,value);}
+  let response,source='edge-cache';
+  if(cache)response=await cache.match(new Request(cacheKey,{headers:headersIn}));
+  if(!response){
+    // Published media is already on Cloudflare: do not send it back to GitHub.
+    response=await env.ASSETS.fetch(new Request(new URL('/'+file,request.url),{method:request.method,headers:headersIn}));source='static';
+    const html=(response.headers.get('Content-Type')||'').includes('text/html');
+    if((!response.ok&&response.status!==304)||html){
+      response=await fetch(`https://raw.githubusercontent.com/${encodeURIComponent(c.owner)}/${encodeURIComponent(c.repo)}/${encodeURIComponent(c.branch)}/${encodeURIComponent(file)}`,{method:request.method,headers:headersIn,cf:{cacheEverything:true,cacheTtlByStatus:{'200-299':86400,'400-599':0}}});source='github';
+    }
+  }
   if(!response.ok&&response.status!==304)return response;
-  const headers=new Headers(response.headers),ext=file.split('.').pop();headers.set('Content-Type',({jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp',gif:'image/gif',mp4:'video/mp4'})[ext]);headers.set('X-Content-Type-Options','nosniff');headers.set('Cache-Control','public, max-age=300');
-  if(url.searchParams.has('download'))headers.set('Content-Disposition',`attachment; filename="${file}"`);
-  return new Response(response.body,{status:response.status,headers});
+  const headers=new Headers(response.headers),ext=file.split('.').pop();headers.set('Content-Type',({jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp',gif:'image/gif',mp4:'video/mp4'})[ext]);headers.set('X-Content-Type-Options','nosniff');headers.set('Cache-Control','public, max-age=86400');headers.set('X-Album-Source',source);
+  const result=new Response(request.method==='HEAD'?null:response.body,{status:response.status,headers});
+  if(cache&&source!=='edge-cache'&&request.method==='GET'&&result.status===200)background(ctx,cache.put(cacheKey,result.clone()));
+  // Downloads share the cached bytes, with attachment headers added only for this request.
+  const outgoing=new Headers(result.headers);
+  if(url.searchParams.has('download'))outgoing.set('Content-Disposition',`attachment; filename="${file}"`);
+  return new Response(result.body,{status:result.status,headers:outgoing});
 }
-export default {async fetch(request,env){try{const path=new URL(request.url).pathname;if(path.startsWith('/api/'))return await api(request,env);if(path.startsWith('/media/')){if(!['GET','HEAD'].includes(request.method))return new Response('Method not allowed',{status:405});return await media(request,env);}return await env.ASSETS.fetch(request);}catch(error){return json({error:error.status?error.message:'连接暂时中断，请稍后重试。'},error.status||500);}}};
+export default {async fetch(request,env,ctx){try{const path=new URL(request.url).pathname;if(path.startsWith('/api/'))return await api(request,env,ctx);if(path.startsWith('/media/')){if(!['GET','HEAD'].includes(request.method))return new Response('Method not allowed',{status:405});return await media(request,env,ctx);}return await env.ASSETS.fetch(request);}catch(error){return json({error:error.status?error.message:'连接暂时中断，请稍后重试。'},error.status||500);}}};
