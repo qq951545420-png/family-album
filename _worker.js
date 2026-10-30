@@ -25,9 +25,20 @@ async function mutate(c,message,change,extraEntries=[]){
   }
 }
 function requireWrite(request,c){if(!c.token)throw fail('上传与修改功能还未启用，请联系网站创建者完成连接。',503);const origin=request.headers.get('Origin');if(origin&&origin!==new URL(request.url).origin)throw fail('请从相册网页中操作。',403);}
-async function payload(request){const length=Number(request.headers.get('Content-Length')||0);if(length>8192)throw fail('提交的文字过长。',413);const text=await request.text();if(text.length>8192)throw fail('提交的文字过长。',413);try{return JSON.parse(text);}catch{throw fail('提交的内容格式有误。');}}
+async function payload(request,limit=8192){const length=Number(request.headers.get('Content-Length')||0);if(length>limit)throw fail('提交的文字过长。',413);const text=await request.text();if(text.length>limit)throw fail('提交的文字过长。',413);try{return JSON.parse(text);}catch{throw fail('提交的内容格式有误。');}}
 function validDate(s){if(typeof s!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(s))return false;const d=new Date(s+'T00:00:00Z');return !isNaN(d)&&d.toISOString().slice(0,10)===s;}
 function extension(name){const ext=String(name).split('.').pop().toLowerCase();if(!['jpg','jpeg','png','webp','gif','mp4'].includes(ext))throw fail('仅支持 JPG、PNG、WebP、GIF 和 MP4。');return ext;}
+function importEntry(data){
+  if(!data||typeof data!=='object')throw fail('上传记录格式有误。');
+  const name=String(data.name||'').slice(0,200),ext=extension(name);
+  if(!/^[0-9a-f]{40}$/.test(data.blobSha||''))throw fail('文件上传没有完成，请重试。');
+  if(!Number.isInteger(data.size)||data.size<=0||data.size>MAX_FILE)throw fail('每个文件最大 20 MB。',413);
+  if(!validDate(data.date))throw fail('请选择有效的拍摄日期。');
+  if(!/^[0-9a-f-]{36}$/i.test(data.uploadId||''))throw fail('上传标识有误，请重新选择文件。');
+  if(data.thumbnailSha&&!/^[0-9a-f]{40}$/.test(data.thumbnailSha))throw fail('预览图上传没有完成，请重试。');
+  const id=data.uploadId,file=`m_${id}.${ext}`,thumbnail=data.thumbnailSha?`t_${id}.jpg`:null;
+  return {entry:{id,file,blobSha:data.blobSha,...(thumbnail?{thumbnail}:{}),originalName:name,caption:String(data.caption||name).trim().slice(0,120)||name,type:ext==='mp4'?'video':'photo',date:data.date,memberId:data.memberId,size:data.size,createdAt:new Date().toISOString()},files:[{path:file,mode:'100644',type:'blob',sha:data.blobSha},...(thumbnail?[{path:thumbnail,mode:'100644',type:'blob',sha:data.thumbnailSha}]:[])]};
+}
 async function api(request,env,ctx){
   const c=config(env),path=new URL(request.url).pathname.replace(/^\/api\//,''),method=request.method;
   if(path==='state'&&method==='GET'){
@@ -54,6 +65,19 @@ async function api(request,env,ctx){
   if(path==='members'&&method==='POST'){
     const data=await payload(request),name=String(data.name||'').trim();if(!name||name.length>24)throw fail('请填写 1–24 字的成员称呼。');
     const id=crypto.randomUUID();return json(await mutate(c,'添加家庭成员',state=>{if(state.members.length>=50)throw fail('最多可以创建 50 位成员。');if(state.members.some(m=>m.name===name))throw fail('这位家人已经在相册中了。');state.members.push({id,name});return {memberId:id};}));
+  }
+  if(path==='memories/batch'&&method==='POST'){
+    const data=await payload(request,65536);
+    if(!Array.isArray(data.items)||!data.items.length||data.items.length>40)throw fail('每批可以保存 1–40 个文件。');
+    const batch=data.items.map(importEntry);
+    if(new Set(batch.map(x=>x.entry.id)).size!==batch.length)throw fail('这一批包含重复的上传标识。');
+    return json(await mutate(c,'批量收藏家庭回忆',state=>{
+      const additions=[];
+      for(const item of batch){const existing=state.memories.find(m=>m.id===item.entry.id);if(existing){if(existing.blobSha!==item.entry.blobSha)throw fail('这个上传标识已被使用。',409);continue;}if(!state.members.some(m=>m.id===item.entry.memberId))throw fail('这位成员已被移除，请重新选择。',409);additions.push(item);}
+      if(!additions.length)return {alreadySaved:true};
+      if(state.memories.length+additions.length>5000)throw fail('相册已达到 5000 个文件，请先整理。');
+      state.memories.push(...additions.map(x=>x.entry));return {addedIds:additions.map(x=>x.entry.id)};
+    },(_,result)=>batch.filter(x=>result.addedIds.includes(x.entry.id)).flatMap(x=>x.files)));
   }
   if(/^members\/[a-zA-Z0-9-]+$/.test(path)&&method==='DELETE'){
     const id=path.split('/')[1];if(id==='shared')throw fail('家庭共享是默认相册，不能移除。');

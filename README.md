@@ -33,3 +33,15 @@
 - 本方案不需要 R2、付费数据库、独立服务器或购买域名。免费套餐和 GitHub API 有额度限制。
 
 此网站没有访问身份验证，这是所有者明确选择的共享方式。发布后不要在此相册存放需要保密的资料。
+
+## 背景音乐
+
+以下曲目均由 Kevin MacLeod (https://incompetech.com/) 创作，使用 Creative Commons Attribution 4.0 授权：https://creativecommons.org/licenses/by/4.0/ 。音乐控件保留曲名、作者、原曲来源、授权及改动说明。
+
+- Carefree — https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1400037
+- Almost New — https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1800008
+- Relaxing Piano Music — https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1500075
+
+本站版本经 96 kbps MP3 压缩及音量降低，Relaxing Piano Music 节选前 4 分钟并添加结尾淡出。原曲下载来源为作者官方网站的 mp3-royaltyfree 目录。首次点击“播放音乐”才加载音频，每轮随机排序，轮次之间避免连续重复；可点下一首及调节音量。播放相册视频时暂停背景音乐，结束或关闭视频后恢复。离开页面时暂停，返回时仅在此前主动播放过的情况下恢复；重新打开网站不会自动播放。
+
+音乐作为家庭影像相册的背景，不需要外部音乐 API 或付费账号。免费授权说明：https://web.incompetech.com/music/royalty-free/licenses/ 。
