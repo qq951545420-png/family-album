@@ -151,7 +151,20 @@
       "memberId": "shared",
       "size": 9032250,
       "createdAt": "2026-10-30T15:39:40.919Z"
+    },
+    {
+      "id": "b7488f06-ad23-5a42-9f70-1ea65a6a5eaf",
+      "file": "m_b7488f06-ad23-5a42-9f70-1ea65a6a5eaf.mp4",
+      "blobSha": "f7c4064020ebd66d21ce8728d441bc0633758619",
+      "thumbnail": "t_b7488f06-ad23-5a42-9f70-1ea65a6a5eaf.jpg",
+      "originalName": "1574783051999.mp4",
+      "caption": "2019.11.26 · 一段小日常",
+      "type": "video",
+      "date": "2019-11-26",
+      "memberId": "shared",
+      "size": 1813829,
+      "createdAt": "2026-10-30T15:39:47.071Z"
     }
   ],
-  "updatedAt": "2026-10-30T15:39:41.534Z"
+  "updatedAt": "2026-10-30T15:39:47.655Z"
 }
