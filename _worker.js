@@ -71,6 +71,11 @@ async function api(request,env,ctx){
     const entries=[{path:file,mode:'100644',type:'blob',sha:data.blobSha},...(thumbnail?[{path:thumbnail,mode:'100644',type:'blob',sha:data.thumbnailSha}]:[])];
     return json(await mutate(c,'收藏新的家庭回忆',state=>{const existing=state.memories.find(m=>m.id===id);if(existing){if(existing.blobSha===data.blobSha)return {alreadySaved:true};throw fail('这个上传标识已被使用，请重新选择文件。',409);}if(!state.members.some(m=>m.id===data.memberId))throw fail('这位成员已被移除，请重新选择。',409);if(state.memories.length>=5000)throw fail('相册已达到 5000 个文件，请先整理。');state.memories.push(entry);return {};},entries));
   }
+  if(/^memories\/[a-zA-Z0-9-]+\/preview$/.test(path)&&method==='POST'){
+    const id=path.split('/')[1],data=await payload(request),file=`t_${id}.jpg`;
+    if(!/^[0-9a-f]{40}$/.test(data.thumbnailSha||''))throw fail('预览图上传没有完成，请重试。');
+    return json(await mutate(c,'加速已有照片预览',state=>{const entry=state.memories.find(m=>m.id===id);if(!entry)throw fail('这条回忆已被移除。',404);if(entry.type!=='photo')throw fail('仅照片需要生成预览图。');if(entry.thumbnail)return {alreadySaved:true};entry.thumbnail=file;return {};},[{path:file,mode:'100644',type:'blob',sha:data.thumbnailSha}]));
+  }
   if(/^memories\/[a-zA-Z0-9-]+$/.test(path)&&method==='DELETE'){
     const id=path.split('/')[1];const result=await mutate(c,'移除一条家庭回忆',state=>{const entry=state.memories.find(m=>m.id===id);if(!entry)throw fail('这条回忆已被移除。',404);state.memories=state.memories.filter(m=>m.id!==id);return {removed:entry.file,...(entry.thumbnail?{removedThumbnail:entry.thumbnail}:{})};},(_,result)=>[result.removed,result.removedThumbnail].filter(Boolean).map(path=>({path,mode:'100644',type:'blob',sha:null})));
     const cache=globalThis.caches?.default;if(cache)background(ctx,Promise.all([result.removed,result.removedThumbnail].filter(Boolean).map(file=>cache.delete(new Request(new URL('/media/'+file,request.url))))));

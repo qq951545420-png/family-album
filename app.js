@@ -6,6 +6,7 @@ const memberName=(id)=>state.members.find(m=>m.id===id)?.name||'家庭共享';
 const mediaUrl=(m)=>'/media/'+encodeURIComponent(m.file);
 const previewUrl=(m)=>'/media/'+encodeURIComponent(m.thumbnail||m.file);
 const uploadJobs=new Map();
+const previewJobs=new Set();
 const friendlyDate=(s)=>s.slice(0,10).replaceAll('-','.');
 const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
 function toast(message){$('toast').textContent=message;$('toast').hidden=false;clearTimeout(toast.timer);toast.timer=setTimeout(()=>$('toast').hidden=true,4000);}
@@ -53,11 +54,19 @@ async function makeThumbnail(file){
   const url=URL.createObjectURL(file),image=new Image();
   try{
     await new Promise((resolve,reject)=>{image.onload=resolve;image.onerror=reject;image.src=url;});
-    const scale=Math.min(1,720/Math.max(image.naturalWidth,image.naturalHeight)),canvas=document.createElement('canvas');
-    canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));
-    const context=canvas.getContext('2d');context.fillStyle='#fff';context.fillRect(0,0,canvas.width,canvas.height);context.drawImage(image,0,0,canvas.width,canvas.height);
-    return await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',0.7));
+    return await thumbnailFromImage(image);
   }catch{return null;}finally{URL.revokeObjectURL(url);}
+}
+function thumbnailFromImage(image){
+  const scale=Math.min(1,720/Math.max(image.naturalWidth,image.naturalHeight)),canvas=document.createElement('canvas');
+  canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));
+  const context=canvas.getContext('2d');context.fillStyle='#fff';context.fillRect(0,0,canvas.width,canvas.height);context.drawImage(image,0,0,canvas.width,canvas.height);
+  return new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',0.7));
+}
+async function ensurePreview(memory,image){
+  if(!writable||memory.thumbnail||previewJobs.has(memory.id)||!image.naturalWidth)return;
+  previewJobs.add(memory.id);
+  try{const thumbnail=await thumbnailFromImage(image);if(!thumbnail)return;const blob=await uploadBlob(await base64(thumbnail));const result=await api('memories/'+memory.id+'/preview',{method:'POST',body:JSON.stringify({thumbnailSha:blob.sha})});applyState(result.state);}catch{/* Browsing the original remains available if background preview creation fails. */}finally{previewJobs.delete(memory.id);}
 }
 function uploadBlob(content,onProgress=()=>{}){return new Promise((resolve,reject)=>{
   const xhr=new XMLHttpRequest();xhr.open('POST','/api/blob');xhr.setRequestHeader('Content-Type','application/json');xhr.timeout=180000;
@@ -97,7 +106,7 @@ $('upload-form').addEventListener('submit',async e=>{
     $('upload-error').textContent=(done?`已有 ${done} 个文件保存成功。\n`:'')+err.message+'\n可以重试剩余文件。';
   }finally{submitting=false;$('upload-submit').disabled=false;$('progress-text').textContent=`已保存 ${done}/${files.length}`;}
 });
-function view(id){const m=state.memories.find(m=>m.id===id);if(!m)return;viewingId=id;$('viewer-media').querySelector('video')?.pause();const el=document.createElement(m.type==='video'?'video':'img'),meta=`${memberName(m.memberId)} · ${friendlyDate(m.date)} · ${(m.size/1024/1024).toFixed(2)} MB`;el.src=m.type==='photo'?previewUrl(m):mediaUrl(m);if(m.type==='video'){el.controls=true;el.playsInline=true;el.preload='metadata';}else{el.alt=m.caption;}$('viewer-media').replaceChildren(el);$('viewer-caption').textContent=m.caption;$('viewer-meta').textContent=meta+(m.thumbnail&&m.type==='photo'?' · 正在加载原图…':'');if(m.thumbnail&&m.type==='photo'){const full=new Image();full.onload=()=>{if(viewingId===id&&$('viewer').open){el.src=full.src;$('viewer-meta').textContent=meta;}};full.onerror=()=>{if(viewingId===id&&$('viewer').open)$('viewer-meta').textContent=meta+' · 原图暂未加载，可稍后重试';};full.src=mediaUrl(m);}$('download').href=mediaUrl(m)+'?download=1';$('download').download=m.originalName||m.file;const i=visibleMemories.findIndex(m=>m.id===id);$('viewer-count').textContent=`${i+1} / ${visibleMemories.length}`;$('previous').disabled=i<=0;$('next').disabled=i>=visibleMemories.length-1;if(!$('viewer').open)openDialog('viewer');}
+function view(id){const m=state.memories.find(m=>m.id===id);if(!m)return;viewingId=id;$('viewer-media').querySelector('video')?.pause();const el=document.createElement(m.type==='video'?'video':'img'),meta=`${memberName(m.memberId)} · ${friendlyDate(m.date)} · ${(m.size/1024/1024).toFixed(2)} MB`;if(m.type==='photo'&&!m.thumbnail)el.addEventListener('load',()=>ensurePreview(m,el),{once:true});el.src=m.type==='photo'?previewUrl(m):mediaUrl(m);if(m.type==='video'){el.controls=true;el.playsInline=true;el.preload='metadata';}else{el.alt=m.caption;}$('viewer-media').replaceChildren(el);$('viewer-caption').textContent=m.caption;$('viewer-meta').textContent=meta+(m.thumbnail&&m.type==='photo'?' · 正在加载原图…':'');if(m.thumbnail&&m.type==='photo'){const full=new Image();full.onload=()=>{if(viewingId===id&&$('viewer').open){el.src=full.src;$('viewer-meta').textContent=meta;}};full.onerror=()=>{if(viewingId===id&&$('viewer').open)$('viewer-meta').textContent=meta+' · 原图暂未加载，可稍后重试';};full.src=mediaUrl(m);}$('download').href=mediaUrl(m)+'?download=1';$('download').download=m.originalName||m.file;const i=visibleMemories.findIndex(m=>m.id===id);$('viewer-count').textContent=`${i+1} / ${visibleMemories.length}`;$('previous').disabled=i<=0;$('next').disabled=i>=visibleMemories.length-1;if(!$('viewer').open)openDialog('viewer');}
 function step(direction){const i=visibleMemories.findIndex(m=>m.id===viewingId);if(visibleMemories[i+direction])view(visibleMemories[i+direction].id);}
 $('previous').addEventListener('click',()=>step(-1));$('next').addEventListener('click',()=>step(1));document.addEventListener('keydown',e=>{if($('viewer').open&&!$('confirm-dialog').open){if(e.key==='ArrowLeft')step(-1);if(e.key==='ArrowRight')step(1);}});
 function confirmDelete(title,message,action){$('confirm-title').textContent=title;$('confirm-message').textContent=message;$('confirm-error').textContent='';confirmAction=action;openDialog('confirm-dialog');}
