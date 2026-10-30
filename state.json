@@ -138,7 +138,20 @@
       "size": 3929205,
       "createdAt": "2026-10-30T12:28:51.542Z",
       "thumbnail": "t_f87e3f8d-e004-4a6e-ae44-d0399980b1c0.jpg"
+    },
+    {
+      "id": "935bf493-8f37-563c-a590-34bcb87f4105",
+      "file": "m_935bf493-8f37-563c-a590-34bcb87f4105.mp4",
+      "blobSha": "3cb1ec48999a9fb53423d1d1fc1ec72045882d58",
+      "thumbnail": "t_935bf493-8f37-563c-a590-34bcb87f4105.jpg",
+      "originalName": "1563028854496.mp4",
+      "caption": "2019.07.13 · 一段小日常",
+      "type": "video",
+      "date": "2019-07-13",
+      "memberId": "shared",
+      "size": 9032250,
+      "createdAt": "2026-10-30T15:39:40.919Z"
     }
   ],
-  "updatedAt": "2026-10-30T13:04:00.922Z"
+  "updatedAt": "2026-10-30T15:39:41.534Z"
 }
