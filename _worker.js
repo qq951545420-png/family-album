@@ -29,7 +29,11 @@ function extension(name){const ext=String(name).split('.').pop().toLowerCase();i
 async function api(request,env){
   const c=config(env),path=new URL(request.url).pathname.replace(/^\/api\//,''),method=request.method;
   if(path==='state'&&method==='GET'){
-    if(c.token)return json({state:await readAt(c,c.branch),writable:true});
+    if(c.token){try{return json({state:await readAt(c,c.branch),writable:true});}catch{/* Public browsing still works when write authorization expires. */}}
+    try{
+      const latest=await fetch(`https://raw.githubusercontent.com/${encodeURIComponent(c.owner)}/${encodeURIComponent(c.repo)}/${encodeURIComponent(c.branch)}/state.json`);
+      if(latest.ok){const state=await latest.json();if(Array.isArray(state.members)&&Array.isArray(state.memories))return json({state,writable:false});}
+    }catch{/* Fall back to the initial deployed copy if GitHub is temporarily unavailable. */}
     const response=await env.ASSETS.fetch(new Request(new URL('/state.json',request.url),{method:'GET'}));
     if(!response.ok)throw fail('相册暂时无法读取。',503);
     return json({state:await response.json(),writable:false});
