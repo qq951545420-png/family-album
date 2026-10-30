@@ -606,7 +606,20 @@
       "memberId": "shared",
       "size": 8300737,
       "createdAt": "2026-10-30T15:59:33.789Z"
+    },
+    {
+      "id": "d59d4ea8-6502-541d-9862-42dd7875a795",
+      "file": "m_d59d4ea8-6502-541d-9862-42dd7875a795.jpg",
+      "blobSha": "43c6ef7de0b164b129fad179bd970a7e692f3e78",
+      "thumbnail": "t_d59d4ea8-6502-541d-9862-42dd7875a795.jpg",
+      "originalName": "2020_02_14_18_44_39.jpg",
+      "caption": "2020.02.14 · 珍藏的小日常",
+      "type": "photo",
+      "date": "2020-02-14",
+      "memberId": "shared",
+      "size": 348451,
+      "createdAt": "2026-10-30T15:59:40.547Z"
     }
   ],
-  "updatedAt": "2026-10-30T15:59:34.355Z"
+  "updatedAt": "2026-10-30T15:59:41.174Z"
 }
