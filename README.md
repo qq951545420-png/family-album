@@ -13,7 +13,8 @@
 
 ## 文件与行为
 
-- `index.html`、`style.css`、`app.js`：相册页面。
+- `index.html`、`style.css`、`app.js`：留白美术馆风格的相册页面。
+- `motion.js`：封面滚动视差、相片逐批浮现、照片展开与阅读进度；使用浏览器原生能力，不引入第三方动效库。支持系统“减少动态效果”设置，手机使用更轻的位移。
 - `_worker.js`：Pages advanced-mode API，服务端使用令牌保存文件。
 - `_routes.json`：仅 API、媒体请求经过 Worker。
 - `state.json`：成员和照片说明。照片、MP4 文件保存在仓库根目录。
